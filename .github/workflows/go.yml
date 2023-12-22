@@ -30,5 +30,8 @@ jobs:
     - name: Install errcheck
       run: go get github.com/kisielk/errcheck
 
+    - name: Add Go bin directory to PATH
+      run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
     - name: Errcheck
       run: errcheck ./...
