@@ -28,10 +28,7 @@ jobs:
       run: go vet -v ./...
 
     - name: Install errcheck
-      run: go get github.com/kisielk/errcheck
-
-    - name: Add Go bin directory to PATH
-      run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      run: go install github.com/kisielk/errcheck
 
     - name: Errcheck
-      run: errcheck ./...
+      run: $(go env GOPATH)/bin/errcheck ./...
