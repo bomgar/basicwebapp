@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -39,7 +40,7 @@ func slogMiddleware(log *slog.Logger) func(next http.Handler) http.Handler {
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
 			defer func() {
-				log.Info("Request",
+				log.Info(fmt.Sprintf("ACCESS %s %s", r.Method, r.URL),
 					slog.String("method", r.Method),
 					slog.String("url", r.URL.String()),
 					slog.String("proto", r.Proto),

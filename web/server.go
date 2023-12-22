@@ -3,6 +3,7 @@ package web
 import (
 	"net/http"
 
+	"github.com/bomgar/basicwebapp/web/controllers"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -17,9 +18,8 @@ func Run(settings RunSettings) {
 
 	r.Use(slogMiddleware(logger))
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
-	http.ListenAndServe(settings.ListenAddress, r)
+	controllers := controllers.Setup()
 
+	setupRoutes(r, controllers)
+	http.ListenAndServe(settings.ListenAddress, r)
 }
