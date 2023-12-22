@@ -1,11 +1,15 @@
 package controllers
 
+import "log/slog"
+
 type Controllers struct {
 	AuthController *AuthController
 }
 
-func Setup() *Controllers {
+func Setup(logger *slog.Logger) *Controllers {
 	return &Controllers{
-		AuthController: &AuthController{},
+		AuthController: &AuthController{
+			logger: logger,
+		},
 	}
 }

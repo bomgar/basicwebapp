@@ -3,6 +3,7 @@ package web
 import (
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/bomgar/basicwebapp/web/controllers"
 )
@@ -15,7 +16,7 @@ type RunSettings struct {
 func Run(settings RunSettings) {
 	logger := newLogger(settings.LogLevel)
 
-	controllers := controllers.Setup()
+	controllers := controllers.Setup(logger)
 	r := SetupRoutes(controllers, logger)
 	server := &http.Server{
 		Addr:     settings.ListenAddress,
@@ -23,5 +24,10 @@ func Run(settings RunSettings) {
 		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
-	server.ListenAndServe()
+	err := server.ListenAndServe()
+	if err != nil {
+		logger.Error("Stop server: %v", err)
+		os.Exit(1)
+	}
+
 }

@@ -12,7 +12,7 @@ import (
 func TestServer() *httptest.Server {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	controllers := controllers.Setup()
+	controllers := controllers.Setup(logger)
 	ts := httptest.NewTLSServer(web.SetupRoutes(controllers, logger))
 	return ts
 }

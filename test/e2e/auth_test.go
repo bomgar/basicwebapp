@@ -12,6 +12,7 @@ func TestAuthWhoAmI(t *testing.T) {
 	defer ts.Close()
 	rs, err := ts.Client().Get(ts.URL + "/whoami")
 	assert.Nil(t, err)
+	defer rs.Body.Close()
 
 	assert.Equal(t, 200, rs.StatusCode)
 
