@@ -1,6 +1,7 @@
 package web
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/bomgar/basicwebapp/web/controllers"
@@ -21,5 +22,11 @@ func Run(settings RunSettings) {
 	controllers := controllers.Setup()
 
 	setupRoutes(r, controllers)
-	http.ListenAndServe(settings.ListenAddress, r)
+	server := &http.Server{
+		Addr:     settings.ListenAddress,
+		Handler:  r,
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
+
+	server.ListenAndServe()
 }
