@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/bomgar/basicwebapp/web/controllers"
-	"github.com/go-chi/chi/v5"
 )
 
 type RunSettings struct {
@@ -14,14 +13,10 @@ type RunSettings struct {
 }
 
 func Run(settings RunSettings) {
-	r := chi.NewRouter()
 	logger := newLogger(settings.LogLevel)
 
-	r.Use(slogMiddleware(logger))
-
 	controllers := controllers.Setup()
-
-	setupRoutes(r, controllers)
+	r := SetupRoutes(controllers, logger)
 	server := &http.Server{
 		Addr:     settings.ListenAddress,
 		Handler:  r,
