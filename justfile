@@ -8,7 +8,7 @@ clean:
 check:
     go vet ./...
 
-fmt :
+fmt:
     go fmt ./...
 
 test:
