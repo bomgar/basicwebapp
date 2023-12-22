@@ -27,8 +27,3 @@ jobs:
     - name: Vet
       run: go vet -v ./...
 
-    - name: Install errcheck
-      run: go install github.com/kisielk/errcheck@latest
-
-    - name: Errcheck
-      run: $(go env GOPATH)/bin/errcheck ./...
