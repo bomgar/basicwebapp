@@ -5,7 +5,6 @@ import (
 	"embed"
 	"fmt"
 	"log/slog"
-	"os"
 	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -28,24 +27,23 @@ func (l GooseLoggerAdapter) Printf(format string, v ...interface{}) {
 	l.logger.Info(strings.TrimSpace(fmt.Sprintf(format, v...)))
 }
 
-func Migrate(databaseUrl string, logger *slog.Logger) {
+func Migrate(databaseUrl string, logger *slog.Logger) error {
 	goose.SetBaseFS(embedMigrations)
 	goose.SetLogger(GooseLoggerAdapter{logger: logger})
 	db, err := sql.Open("pgx", databaseUrl)
 	if err != nil {
-		logger.Error("Connect to database failed.", slog.Any("err", err))
-		os.Exit(1)
+		return fmt.Errorf("Connect to database failed: %w", err)
 	}
 	defer db.Close()
 
 	if err := goose.SetDialect("postgres"); err != nil {
-		logger.Error("Failed to set dialect.", slog.Any("err", err))
-		os.Exit(1)
+		return err
 	}
 
 	if err := goose.Up(db, "migrations"); err != nil {
-		logger.Error("Failed to apply db migrations.", slog.Any("err", err))
-		os.Exit(1)
+		return fmt.Errorf("db migration failed: %w", err)
 	}
+
+	return nil
 
 }

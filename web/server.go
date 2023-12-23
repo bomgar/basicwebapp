@@ -19,7 +19,8 @@ type RunSettings struct {
 func Run(settings RunSettings) {
 	logger := newLogger(settings.LogLevel)
 	database := db.Connect(settings.DatabaseUrl, logger)
-	db.Migrate(settings.DatabaseUrl, logger)
+	err := db.Migrate(settings.DatabaseUrl, logger)
+	logger.Error("Failed to migrate db", slog.Any("err", err))
 
 	services := services.Setup(logger, database)
 	controllers := controllers.Setup(logger, services)
@@ -30,7 +31,7 @@ func Run(settings RunSettings) {
 		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		logger.Error("Stop server: %v", err)
 		os.Exit(1)

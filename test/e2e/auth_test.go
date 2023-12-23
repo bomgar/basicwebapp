@@ -11,7 +11,7 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	ts := setup.Setup()
+	ts := setup.Setup(t)
 	defer ts.Close()
 
 	registerRequest := dto.RegisterRequest{
@@ -28,7 +28,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestAuthWhoAmI(t *testing.T) {
-	ts := setup.Setup()
+	ts := setup.Setup(t)
 	defer ts.Close()
 
 	rs, err := ts.Server.Client().Get(ts.Server.URL + "/whoami")

@@ -25,10 +25,13 @@ func (s *AuthService) Register(ctx context.Context, registerRequest dto.Register
 
 	err = s.DB.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
 		queries := q.New(conn)
-		queries.InsertUser(ctx, q.InsertUserParams{
+		_, err = queries.InsertUser(ctx, q.InsertUserParams{
 			Email:          registerRequest.Email,
 			HashedPassword: string(pwHash),
 		})
+		if err != nil {
+			return fmt.Errorf("Could not insert user: %w", err)
+		}
 		return nil
 	})
 

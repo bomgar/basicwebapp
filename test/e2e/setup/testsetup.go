@@ -1,15 +1,18 @@
 package setup
 
 import (
+	"context"
 	"log/slog"
 	"net/http/httptest"
 	"os"
+	"testing"
 
 	"github.com/bomgar/basicwebapp/db"
 	"github.com/bomgar/basicwebapp/services"
 	"github.com/bomgar/basicwebapp/web"
 	"github.com/bomgar/basicwebapp/web/controllers"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/assert"
 )
 
 type TestSetup struct {
@@ -24,12 +27,17 @@ func (ts TestSetup) Close() {
 	ts.DB.Close()
 }
 
-func Setup() TestSetup {
+func Setup(t *testing.T) TestSetup {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	databaseUrl := "postgres://fkbr:fkbr@localhost:5432/fkbr"
 	database := db.Connect(databaseUrl, logger)
-	db.Migrate(databaseUrl, logger)
+	err := db.Migrate(databaseUrl, logger)
+
+	assert.Nil(t, err)
+
+	err = cleanDb(database)
+	assert.Nil(t, err)
 
 	services := services.Setup(logger, database)
 	controllers := controllers.Setup(logger, services)
@@ -40,4 +48,20 @@ func Setup() TestSetup {
 		Services:    services,
 		Controllers: controllers,
 	}
+}
+
+func cleanDb(database *pgxpool.Pool) error {
+	ctx := context.Background()
+	return database.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
+		deleteQueries := []string{
+			"DELETE FROM users",
+		}
+		for _, query := range deleteQueries {
+			_, err := conn.Exec(ctx, query)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
