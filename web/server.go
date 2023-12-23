@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/bomgar/basicwebapp/db"
+	"github.com/bomgar/basicwebapp/services"
 	"github.com/bomgar/basicwebapp/web/controllers"
 )
 
@@ -20,7 +21,8 @@ func Run(settings RunSettings) {
 	database := db.Connect(settings.DatabaseUrl, logger)
 	db.Migrate(database, logger)
 
-	controllers := controllers.Setup(logger)
+	services := services.Setup(logger)
+	controllers := controllers.Setup(logger, services)
 	r := SetupRoutes(controllers, logger)
 	server := &http.Server{
 		Addr:     settings.ListenAddress,

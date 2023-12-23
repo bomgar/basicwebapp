@@ -5,13 +5,15 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/bomgar/basicwebapp/services/authservice"
 	"github.com/bomgar/basicwebapp/web/dto"
 	"github.com/go-playground/validator/v10"
 )
 
 type AuthController struct {
-	logger    *slog.Logger
-	validator *validator.Validate
+	logger      *slog.Logger
+	validator   *validator.Validate
+	authService *authservice.AuthService
 }
 
 func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
