@@ -1,12 +1,39 @@
 package controllers
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
+
+	"github.com/bomgar/basicwebapp/web/dto"
+	"github.com/go-playground/validator/v10"
 )
 
 type AuthController struct {
-	logger *slog.Logger
+	logger    *slog.Logger
+	validator *validator.Validate
+}
+
+func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
+	registerRequest := &dto.RegisterRequest{}
+
+	err := json.NewDecoder(r.Body).Decode(&registerRequest)
+	if err != nil {
+		c.logger.Error("Failed to decode request", slog.Any("err", err))
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
+
+	validationErrors := c.validator.Struct(registerRequest)
+	if validationErrors != nil {
+		c.logger.Info("Validation failed.", slog.Any("err", validationErrors))
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(validationErrors.Error()))
+		return
+	}
+
+	c.logger.Info("Received register request.", slog.String("username", registerRequest.Username))
 }
 
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
