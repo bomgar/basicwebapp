@@ -1,4 +1,4 @@
-package controllers
+package authcontroller
 
 import (
 	"encoding/json"
@@ -14,6 +14,14 @@ type AuthController struct {
 	logger      *slog.Logger
 	validator   *validator.Validate
 	authService *authservice.AuthService
+}
+
+func New(logger *slog.Logger, validator *validator.Validate, authService *authservice.AuthService) *AuthController {
+	return &AuthController{
+		logger:      logger.With("controller", "AuthController"),
+		validator:   validator,
+		authService: authService,
+	}
 }
 
 func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {

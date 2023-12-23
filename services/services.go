@@ -13,9 +13,9 @@ type Services struct {
 
 func Setup(logger *slog.Logger, DB *pgxpool.Pool) *Services {
 	return &Services{
-		AuthService: &authservice.AuthService{
-			Logger: logger.With("service", "AuthService"),
-			DB:     DB,
-		},
+		AuthService: authservice.New(
+			logger.With("service", "AuthService"),
+			DB,
+		),
 	}
 }

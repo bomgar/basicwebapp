@@ -12,8 +12,15 @@ import (
 )
 
 type AuthService struct {
-	Logger *slog.Logger
-	DB     *pgxpool.Pool
+	logger *slog.Logger
+	db     *pgxpool.Pool
+}
+
+func New(logger *slog.Logger, DB *pgxpool.Pool) *AuthService {
+	return &AuthService{
+		logger: logger.With("service", "AuthService"),
+		db:     DB,
+	}
 }
 
 func (s *AuthService) Register(ctx context.Context, registerRequest dto.RegisterRequest) error {
@@ -23,7 +30,7 @@ func (s *AuthService) Register(ctx context.Context, registerRequest dto.Register
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	return s.DB.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
+	return s.db.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
 		queries := q.New(conn)
 		_, err = queries.InsertUser(ctx, q.InsertUserParams{
 			Email:          registerRequest.Email,
@@ -37,7 +44,7 @@ func (s *AuthService) Register(ctx context.Context, registerRequest dto.Register
 }
 
 func (s *AuthService) Login(ctx context.Context, loginRequest dto.LoginRequest) (int32, error) {
-	conn, err := s.DB.Acquire(ctx)
+	conn, err := s.db.Acquire(ctx)
 	if err != nil {
 		return -1, err
 	}
