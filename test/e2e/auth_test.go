@@ -8,7 +8,7 @@ import (
 )
 
 func TestAuthWhoAmI(t *testing.T) {
-	ts := setup.TestServer()
+	ts := setup.Setup()
 	defer ts.Close()
 
 	rs, err := ts.Server.Client().Get(ts.Server.URL + "/whoami")

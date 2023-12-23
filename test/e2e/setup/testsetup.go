@@ -21,7 +21,7 @@ func (ts TestSetup) Close() {
 	ts.DB.Close()
 }
 
-func TestServer() TestSetup {
+func Setup() TestSetup {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	database := db.Connect("postgres://fkbr:fkbr@localhost:5432/fkbr", logger)
