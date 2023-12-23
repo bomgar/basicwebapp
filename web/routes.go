@@ -17,6 +17,7 @@ func SetupRoutes(c *controllers.Controllers, logger *slog.Logger) *chi.Mux {
 
 	r.Get("/whoami", c.AuthController.WhoAmI)
 	r.Post("/register", c.AuthController.Register)
+	r.Post("/login", c.AuthController.Login)
 
 	return r
 }

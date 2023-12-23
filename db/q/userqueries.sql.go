@@ -24,3 +24,19 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (int32, 
 	err := row.Scan(&id)
 	return id, err
 }
+
+const selectPasswordHashByUserEmail = `-- name: SelectPasswordHashByUserEmail :one
+SELECT id, hashed_password FROM users WHERE email = $1
+`
+
+type SelectPasswordHashByUserEmailRow struct {
+	ID             int32
+	HashedPassword string
+}
+
+func (q *Queries) SelectPasswordHashByUserEmail(ctx context.Context, email string) (SelectPasswordHashByUserEmailRow, error) {
+	row := q.db.QueryRow(ctx, selectPasswordHashByUserEmail, email)
+	var i SelectPasswordHashByUserEmailRow
+	err := row.Scan(&i.ID, &i.HashedPassword)
+	return i, err
+}

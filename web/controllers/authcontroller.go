@@ -46,6 +46,33 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
+	loginRequest := &dto.LoginRequest{}
+
+	err := json.NewDecoder(r.Body).Decode(&loginRequest)
+	if err != nil {
+		c.logger.Error("Failed to decode request", slog.Any("err", err))
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
+
+	userId, err := c.authService.Login(r.Context(), *loginRequest)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("Login failed"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(dto.LoginResponse{UserId: userId})
+	if err != nil {
+		c.logger.Error("Failed to write response: %v", err)
+	}
+
+}
+
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, err := w.Write([]byte("{}"))

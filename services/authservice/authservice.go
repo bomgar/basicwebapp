@@ -41,3 +41,29 @@ func (s *AuthService) Register(ctx context.Context, registerRequest dto.Register
 
 	return nil
 }
+
+func (s *AuthService) Login(ctx context.Context, loginRequest dto.LoginRequest) (int32, error) {
+	var userId int32
+	var passwordHash string
+	err := s.DB.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
+		queries := q.New(conn)
+		row, err := queries.SelectPasswordHashByUserEmail(ctx, loginRequest.Email)
+		if err != nil {
+			return fmt.Errorf("Could not retrieve password hash: %w", err)
+		}
+		passwordHash = row.HashedPassword
+		userId = row.ID
+		return nil
+	})
+
+	if err != nil {
+		return -1, fmt.Errorf("Could not retrieve passwort hash: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(loginRequest.Password))
+	if err != nil {
+		return -1, fmt.Errorf("Password check failed: %w", err)
+	}
+
+	return userId, nil
+}
