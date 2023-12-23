@@ -5,11 +5,13 @@ import (
 	"log/slog"
 
 	"github.com/bomgar/basicwebapp/web/dto"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
 	Logger *slog.Logger
+	DB     *pgxpool.Pool
 }
 
 func (s *AuthService) Register(registerRequest dto.RegisterRequest) error {

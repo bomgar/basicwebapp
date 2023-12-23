@@ -1,20 +1,20 @@
 package db
 
 import (
-	"database/sql"
+	"context"
 	"log/slog"
 	"os"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect(databaseUrl string, logger *slog.Logger) *sql.DB {
-	db, err := sql.Open("pgx", databaseUrl)
+func Connect(databaseUrl string, logger *slog.Logger) *pgxpool.Pool {
+	db, err := pgxpool.New(context.Background(), databaseUrl)
 	if err != nil {
 		logger.Error("Connect to database failed.", slog.Any("err", err))
 		os.Exit(1)
 	}
-	err = db.Ping()
+	err = db.Ping(context.Background())
 	if err != nil {
 		logger.Error("Ping database failed.", slog.Any("err", err))
 		os.Exit(1)

@@ -19,9 +19,9 @@ type RunSettings struct {
 func Run(settings RunSettings) {
 	logger := newLogger(settings.LogLevel)
 	database := db.Connect(settings.DatabaseUrl, logger)
-	db.Migrate(database, logger)
+	db.Migrate(settings.DatabaseUrl, logger)
 
-	services := services.Setup(logger)
+	services := services.Setup(logger, database)
 	controllers := controllers.Setup(logger, services)
 	r := SetupRoutes(controllers, logger)
 	server := &http.Server{

@@ -28,9 +28,15 @@ func (l GooseLoggerAdapter) Printf(format string, v ...interface{}) {
 	l.logger.Info(strings.TrimSpace(fmt.Sprintf(format, v...)))
 }
 
-func Migrate(db *sql.DB, logger *slog.Logger) {
+func Migrate(databaseUrl string, logger *slog.Logger) {
 	goose.SetBaseFS(embedMigrations)
 	goose.SetLogger(GooseLoggerAdapter{logger: logger})
+	db, err := sql.Open("pgx", databaseUrl)
+	if err != nil {
+		logger.Error("Connect to database failed.", slog.Any("err", err))
+		os.Exit(1)
+	}
+	defer db.Close()
 
 	if err := goose.SetDialect("postgres"); err != nil {
 		logger.Error("Failed to set dialect.", slog.Any("err", err))
