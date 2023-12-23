@@ -37,7 +37,7 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 
 	c.logger.Info("Received register request.", slog.String("username", registerRequest.Email))
 
-    err = c.authService.Register(r.Context(), *registerRequest)
+	err = c.authService.Register(r.Context(), *registerRequest)
 	if err != nil {
 		c.logger.Error("Failed to register user", slog.Any("err", err))
 		w.WriteHeader(http.StatusInternalServerError)

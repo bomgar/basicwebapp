@@ -23,18 +23,17 @@ func (s *AuthService) Register(ctx context.Context, registerRequest dto.Register
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-
-    err = s.DB.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
-        queries := q.New(conn)
-        queries.InsertUser(ctx, q.InsertUserParams{
-            Email: registerRequest.Email,
-            HashedPassword: string(pwHash),
-        })
-        return nil
-    })
+	err = s.DB.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
+		queries := q.New(conn)
+		queries.InsertUser(ctx, q.InsertUserParams{
+			Email:          registerRequest.Email,
+			HashedPassword: string(pwHash),
+		})
+		return nil
+	})
 
 	if err != nil {
-        return fmt.Errorf("Could not use database: %w", err)
+		return fmt.Errorf("Could not use database: %w", err)
 	}
 
 	return nil
