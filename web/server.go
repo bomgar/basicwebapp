@@ -17,7 +17,8 @@ type RunSettings struct {
 
 func Run(settings RunSettings) {
 	logger := newLogger(settings.LogLevel)
-	_ = db.Connect(settings.DatabaseUrl, logger)
+	database := db.Connect(settings.DatabaseUrl, logger)
+	db.Migrate(database, logger)
 
 	controllers := controllers.Setup(logger)
 	r := SetupRoutes(controllers, logger)
