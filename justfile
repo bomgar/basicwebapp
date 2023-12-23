@@ -7,6 +7,7 @@ clean:
 
 check:
     go vet ./...
+    golangci-lint run
 
 fmt:
     go fmt ./...
