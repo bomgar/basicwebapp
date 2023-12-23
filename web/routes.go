@@ -13,6 +13,7 @@ func SetupRoutes(c *controllers.Controllers, logger *slog.Logger) *chi.Mux {
 
 	r.Use(slogMiddleware(logger))
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.Compress(5))
 
 	r.Get("/whoami", c.AuthController.WhoAmI)
 	r.Post("/register", c.AuthController.Register)

@@ -44,7 +44,7 @@ func slogMiddleware(log *slog.Logger) func(next http.Handler) http.Handler {
 					slog.String("method", r.Method),
 					slog.String("url", r.URL.String()),
 					slog.String("proto", r.Proto),
-					slog.Int64("duration", time.Since(start).Microseconds()),
+					slog.Int64("durationInMicroseconds", time.Since(start).Microseconds()),
 					slog.String("remote", r.RemoteAddr),
 					slog.Int("status", ww.Status()),
 					slog.Int("bytesWritten", ww.BytesWritten()),

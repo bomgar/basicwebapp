@@ -47,7 +47,8 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("don't know"))
+	w.Header().Set("Content-Type", "application/json")
+	_, err := w.Write([]byte("{}"))
 
 	if err != nil {
 		c.logger.Error("Failed to write response: %v", err)
