@@ -36,7 +36,7 @@ func (s *AuthService) Register(ctx context.Context, registerRequest dto.Register
 	})
 
 	if err != nil {
-		return fmt.Errorf("Could not use database: %w", err)
+		return fmt.Errorf("Registration failed: %w", err)
 	}
 
 	return nil

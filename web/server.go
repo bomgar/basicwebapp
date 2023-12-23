@@ -20,7 +20,10 @@ func Run(settings RunSettings) {
 	logger := newLogger(settings.LogLevel)
 	database := db.Connect(settings.DatabaseUrl, logger)
 	err := db.Migrate(settings.DatabaseUrl, logger)
-	logger.Error("Failed to migrate db", slog.Any("err", err))
+	if err != nil {
+		logger.Error("Failed to migrate db", slog.Any("err", err))
+		os.Exit(1)
+	}
 
 	services := services.Setup(logger, database)
 	controllers := controllers.Setup(logger, services)
