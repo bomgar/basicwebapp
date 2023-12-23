@@ -15,7 +15,7 @@ func TestRegister(t *testing.T) {
 	defer ts.Close()
 
 	registerRequest := dto.RegisterRequest{
-		Username: "fkbr",
+		Email: "fkbr",
 		Password: "sxoe",
 	}
 	body, err := json.Marshal(registerRequest)

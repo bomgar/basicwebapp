@@ -1,5 +1,5 @@
-build:
-    mkdir build
+build: sqlc
+    mkdir -p build
     go build -o build/basicwebapp main.go
 
 clean:
@@ -14,3 +14,6 @@ fmt:
 
 test:
     go test -v ./...
+
+sqlc:
+    sqlc generate

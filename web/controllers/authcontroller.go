@@ -35,7 +35,15 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.logger.Info("Received register request.", slog.String("username", registerRequest.Username))
+	c.logger.Info("Received register request.", slog.String("username", registerRequest.Email))
+
+    err = c.authService.Register(r.Context(), *registerRequest)
+	if err != nil {
+		c.logger.Error("Failed to register user", slog.Any("err", err))
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
 }
 
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
