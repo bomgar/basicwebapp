@@ -87,6 +87,14 @@ func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	validationErrors := c.validator.Struct(loginRequest)
+	if validationErrors != nil {
+		c.logger.Info("Validation failed.", slog.Any("err", validationErrors))
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(validationErrors.Error()))
+		return
+	}
+
 	userId, err := c.authService.Login(r.Context(), *loginRequest)
 	if err != nil {
 		c.logger.Warn("Failed to login", slog.Any("err", err))
