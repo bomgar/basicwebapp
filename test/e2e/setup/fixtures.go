@@ -23,11 +23,11 @@ func (ts *TestSetup) RegisterUser(t *testing.T, email string, password string) {
 	rs, err := ts.Server.Client().Post(ts.Server.URL+"/register", "application/json", bytes.NewReader(body))
 	assert.Nil(t, err)
 
-	assert.Equal(t, 200, rs.StatusCode)
+	assert.Equal(t, http.StatusOK, rs.StatusCode)
 
 }
 
-func (ts *TestSetup) LoginUser(t *testing.T, email string, password string) *http.Cookie {
+func (ts *TestSetup) LoginUser(t *testing.T, email string, password string) (dto.LoginResponse, *http.Cookie) {
 	loginRequest := dto.LoginRequest{
 		Email:    email,
 		Password: password,
@@ -38,10 +38,14 @@ func (ts *TestSetup) LoginUser(t *testing.T, email string, password string) *htt
 	rs, err := ts.Server.Client().Post(ts.Server.URL+"/login", "application/json", bytes.NewReader(body))
 	assert.Nil(t, err)
 
-	assert.Equal(t, 200, rs.StatusCode)
+	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	cookieIndex := slices.IndexFunc(rs.Cookies(), func(cookie *http.Cookie) bool {
 		return cookie.Name == authcontroller.CookieName
 	})
 	assert.NotEqual(t, -1, cookieIndex)
-	return rs.Cookies()[cookieIndex]
+
+	loginResponse := dto.LoginResponse{}
+	err = json.NewDecoder(rs.Body).Decode(&loginResponse)
+	assert.Nil(t, err)
+	return loginResponse, rs.Cookies()[cookieIndex]
 }

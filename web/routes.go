@@ -15,7 +15,10 @@ func SetupRoutes(c *controllers.Controllers, logger *slog.Logger) *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 
-	r.Get("/whoami", c.AuthController.WhoAmI)
+	r.Route("/api", func(r chi.Router) {
+		r.Use(c.AuthController.AuthenticatedMiddleware)
+		r.Get("/whoami", c.AuthController.WhoAmI)
+	})
 	r.Post("/register", c.AuthController.Register)
 	r.Post("/login", c.AuthController.Login)
 

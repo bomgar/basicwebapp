@@ -13,3 +13,7 @@ type LoginRequest struct {
 type LoginResponse struct {
 	UserId int32 `json:"userId"`
 }
+
+type WhoAmIResponse struct {
+	UserId int32 `json:"userId"`
+}

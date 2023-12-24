@@ -1,9 +1,11 @@
 package authcontroller
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/bomgar/basicwebapp/services/authservice"
@@ -20,9 +22,13 @@ type AuthController struct {
 }
 
 type Session struct {
-	expires time.Time
-	userId  int32
+	Expires time.Time
+	UserId  int32
 }
+
+type SessionContextKey string
+
+var SessionKey SessionContextKey = "session"
 
 const SessionName = "fkbr-session"
 const CookieName = "fkbr-cookie"
@@ -109,32 +115,57 @@ func (c *AuthController) setSession(userId int32, w http.ResponseWriter) error {
 	expires := time.Now().Add(30 * 24 * time.Hour)
 
 	session := Session{
-		userId:  userId,
-		expires: expires,
+		UserId:  userId,
+		Expires: expires,
 	}
-	jsonSession, err := json.Marshal(session)
+	encoded, err := c.secureCookie.Encode(SessionName, session)
 	if err != nil {
 		return err
 	}
-	if encoded, err := c.secureCookie.Encode(SessionName, jsonSession); err == nil {
-		cookie := &http.Cookie{
-			Name:     CookieName,
-			Value:    encoded,
-			Path:     "/",
-			Secure:   true,
-			HttpOnly: true,
-			Expires:  expires,
-		}
-		http.SetCookie(w, cookie)
+	cookie := &http.Cookie{
+		Name:     CookieName,
+		Value:    encoded,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+		Expires:  expires,
 	}
+	http.SetCookie(w, cookie)
 	return nil
 }
 
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	_, err := w.Write([]byte("{}"))
 
+	w.WriteHeader(http.StatusOK)
+	err := json.NewEncoder(w).Encode(dto.WhoAmIResponse{UserId: r.Context().Value(SessionKey).(Session).UserId})
 	if err != nil {
 		c.logger.Error("Failed to write response: %v", err)
 	}
+}
+
+func (c *AuthController) AuthenticatedMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookieIndex := slices.IndexFunc(r.Cookies(), func(cookie *http.Cookie) bool {
+			return cookie.Name == CookieName
+		})
+		if cookieIndex == -1 {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		cookie := r.Cookies()[cookieIndex]
+		session := Session{}
+		err := c.secureCookie.Decode(SessionName, cookie.Value, &session)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if session.Expires.Before(time.Now()) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), SessionKey, session)))
+	})
 }
