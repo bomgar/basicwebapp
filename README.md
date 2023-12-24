@@ -3,6 +3,8 @@
 This is a basic web application. I did this to see how I could structure a go backend.
 Supports register, login and whoami.
 
+This is not production ready! It is just for learning.
+
 
 ## Run
 

@@ -35,6 +35,7 @@ const CookieName = "fkbr-cookie"
 
 func New(logger *slog.Logger, validator *validator.Validate, authService *authservice.AuthService) *AuthController {
 
+	// TODO provide key with cli
 	hashKey := securecookie.GenerateRandomKey(64)
 	var sc = securecookie.New(hashKey, nil)
 	return &AuthController{
