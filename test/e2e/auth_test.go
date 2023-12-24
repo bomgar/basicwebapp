@@ -1,12 +1,9 @@
 package e2e
 
 import (
-	"bytes"
-	"encoding/json"
 	"testing"
 
 	"github.com/bomgar/basicwebapp/test/e2e/setup"
-	"github.com/bomgar/basicwebapp/web/dto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,17 +11,15 @@ func TestRegister(t *testing.T) {
 	ts := setup.Setup(t)
 	defer ts.Close()
 
-	registerRequest := dto.RegisterRequest{
-		Email:    "fkbr",
-		Password: "sxoe",
-	}
-	body, err := json.Marshal(registerRequest)
-	assert.Nil(t, err)
+	ts.RegisterUser(t, "fkbr@sxoe.kuci", "fkbr")
+}
 
-	rs, err := ts.Server.Client().Post(ts.Server.URL+"/register", "application/json", bytes.NewReader(body))
-	assert.Nil(t, err)
+func TestLogin(t *testing.T) {
+	ts := setup.Setup(t)
+	defer ts.Close()
 
-	assert.Equal(t, 200, rs.StatusCode)
+	ts.RegisterUser(t, "fkbr@sxoe.kuci", "fkbr")
+	ts.LoginUser(t, "fkbr@sxoe.kuci", "fkbr")
 }
 
 func TestAuthWhoAmI(t *testing.T) {

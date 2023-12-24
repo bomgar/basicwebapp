@@ -22,12 +22,12 @@ type TestSetup struct {
 	Controllers *controllers.Controllers
 }
 
-func (ts TestSetup) Close() {
+func (ts *TestSetup) Close() {
 	ts.Server.Close()
 	ts.DB.Close()
 }
 
-func Setup(t *testing.T) TestSetup {
+func Setup(t *testing.T) *TestSetup {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	databaseUrl := "postgres://fkbr:fkbr@localhost:5432/fkbr"
@@ -42,7 +42,7 @@ func Setup(t *testing.T) TestSetup {
 	services := services.Setup(logger, database)
 	controllers := controllers.Setup(logger, services)
 	ts := httptest.NewTLSServer(web.SetupRoutes(controllers, logger))
-	return TestSetup{
+	return &TestSetup{
 		Server:      ts,
 		DB:          database,
 		Services:    services,
