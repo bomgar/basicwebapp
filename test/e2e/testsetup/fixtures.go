@@ -1,4 +1,4 @@
-package setup
+package testsetup
 
 import (
 	"bytes"
@@ -17,14 +17,7 @@ func (ts *TestSetup) RegisterUser(t *testing.T, email string, password string) {
 		Email:    email,
 		Password: password,
 	}
-	body, err := json.Marshal(registerRequest)
-	assert.Nil(t, err)
-
-	rs, err := ts.Server.Client().Post(ts.Server.URL+"/register", "application/json", bytes.NewReader(body))
-	assert.Nil(t, err)
-
-	assert.Equal(t, http.StatusOK, rs.StatusCode)
-
+	ts.PostJson(t, "/register", registerRequest, nil)
 }
 
 func (ts *TestSetup) LoginUser(t *testing.T, email string, password string) (dto.LoginResponse, *http.Cookie) {
