@@ -1,11 +1,10 @@
 package e2e
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"testing"
 
+	"github.com/bomgar/basicwebapp/test/e2e/request"
 	"github.com/bomgar/basicwebapp/test/e2e/setup"
 	"github.com/bomgar/basicwebapp/web/dto"
 	"github.com/stretchr/testify/assert"
@@ -39,18 +38,8 @@ func TestAuthWhoAmI(t *testing.T) {
 	ts.RegisterUser(t, "fkbr@sxoe.kuci", "fkbr")
 	loginResponse, cookie := ts.LoginUser(t, "fkbr@sxoe.kuci", "fkbr")
 
-	whoamIRequest, err := http.NewRequest("GET", ts.Server.URL+"/api/whoami", bytes.NewReader([]byte{}))
-	assert.Nil(t, err)
-	whoamIRequest.AddCookie(cookie)
-
-	whoAmIResponse, err := ts.Server.Client().Do(whoamIRequest)
-	assert.Nil(t, err)
-	defer whoAmIResponse.Body.Close()
-
-	assert.Equal(t, http.StatusOK, whoAmIResponse.StatusCode)
 	whoAmIBody := dto.WhoAmIResponse{}
-	err = json.NewDecoder(whoAmIResponse.Body).Decode(&whoAmIBody)
-	assert.Nil(t, err)
+	request.GetJson(t, ts, "/api/whoami", cookie, &whoAmIBody)
 
 	assert.Equal(t, loginResponse.UserId, whoAmIBody.UserId)
 }
