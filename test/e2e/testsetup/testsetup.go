@@ -12,7 +12,7 @@ import (
 	"github.com/bomgar/basicwebapp/web"
 	"github.com/bomgar/basicwebapp/web/controllers"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type TestSetup struct {
@@ -34,10 +34,10 @@ func Setup(t *testing.T) *TestSetup {
 	database := db.Connect(databaseUrl, logger)
 	err := db.Migrate(databaseUrl, logger)
 
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	err = cleanDb(database)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	services := services.Setup(logger, database)
 	controllers := controllers.Setup(logger, services)

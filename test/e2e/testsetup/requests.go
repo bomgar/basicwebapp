@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func (ts *TestSetup) GetJsonWithCookie(t *testing.T, url string, cookie *http.Cookie, result interface{}) {
@@ -21,18 +21,18 @@ func (ts *TestSetup) GetJson(t *testing.T, url string, result interface{}) {
 
 func (ts *TestSetup) GetJsonWithRequestCustomizer(t *testing.T, url string, result interface{}, customizer func(r *http.Request)) {
 	request, err := http.NewRequest("GET", ts.Server.URL+url, bytes.NewReader([]byte{}))
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	customizer(request)
 
 	response, err := ts.Server.Client().Do(request)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	defer response.Body.Close()
 
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
+	require.Equal(t, http.StatusOK, response.StatusCode)
+	require.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	err = json.NewDecoder(response.Body).Decode(&result)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func (ts *TestSetup) PostJsonWithCookie(t *testing.T, url string, body interface{}, cookie *http.Cookie, result interface{}) {
@@ -47,20 +47,20 @@ func (ts *TestSetup) PostJson(t *testing.T, url string, body interface{}, result
 
 func (ts *TestSetup) PostJsonWithRequestCustomizer(t *testing.T, url string, body interface{}, result interface{}, customizer func(r *http.Request)) {
 	bodyBytes, err := json.Marshal(body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	request, err := http.NewRequest("POST", ts.Server.URL+url, bytes.NewReader(bodyBytes))
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	customizer(request)
 
 	response, err := ts.Server.Client().Do(request)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	defer response.Body.Close()
 
-	assert.Equal(t, http.StatusOK, response.StatusCode)
+	require.Equal(t, http.StatusOK, response.StatusCode)
 	if result != nil {
-		assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
+		require.Equal(t, "application/json", response.Header.Get("Content-Type"))
 		err = json.NewDecoder(response.Body).Decode(&result)
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 }
