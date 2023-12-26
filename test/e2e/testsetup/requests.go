@@ -19,6 +19,17 @@ func (ts *TestSetup) GetJson(t *testing.T, url string, result interface{}) {
 	ts.GetJsonWithRequestCustomizer(t, url, result, func(r *http.Request) {})
 }
 
+func (ts *TestSetup) GetExpectErrorStatus(t *testing.T, url string, expectedStatus int) {
+	request, err := http.NewRequest("GET", ts.Server.URL+url, bytes.NewReader([]byte{}))
+	require.Nil(t, err)
+
+	response, err := ts.Server.Client().Do(request)
+	require.Nil(t, err)
+	defer response.Body.Close()
+
+	require.Equal(t, expectedStatus, response.StatusCode)
+}
+
 func (ts *TestSetup) GetJsonWithRequestCustomizer(t *testing.T, url string, result interface{}, customizer func(r *http.Request)) {
 	request, err := http.NewRequest("GET", ts.Server.URL+url, bytes.NewReader([]byte{}))
 	require.Nil(t, err)

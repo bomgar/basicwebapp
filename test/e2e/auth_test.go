@@ -37,6 +37,9 @@ func TestAuthWhoAmI(t *testing.T) {
 	ts.RegisterUser(t, "fkbr@sxoe.kuci", "fkbr")
 	loginResponse, cookie := ts.LoginUser(t, "fkbr@sxoe.kuci", "fkbr")
 
+	// no cookie
+	ts.GetExpectErrorStatus(t, "/whoami", http.StatusUnauthorized)
+
 	whoAmIBody := dto.WhoAmIResponse{}
 	ts.GetJsonWithCookie(t, "/whoami", cookie, &whoAmIBody)
 
