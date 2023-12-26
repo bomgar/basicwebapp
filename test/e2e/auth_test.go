@@ -28,7 +28,7 @@ func TestAuthWhoAmI(t *testing.T) {
 	ts := testsetup.Setup(t)
 	defer ts.Close()
 
-	rs, err := ts.Server.Client().Get(ts.Server.URL + "/api/whoami")
+	rs, err := ts.Server.Client().Get(ts.Server.URL + "/whoami")
 	assert.Nil(t, err)
 	rs.Body.Close()
 
@@ -38,7 +38,7 @@ func TestAuthWhoAmI(t *testing.T) {
 	loginResponse, cookie := ts.LoginUser(t, "fkbr@sxoe.kuci", "fkbr")
 
 	whoAmIBody := dto.WhoAmIResponse{}
-	ts.GetJsonWithCookie(t, "/api/whoami", cookie, &whoAmIBody)
+	ts.GetJsonWithCookie(t, "/whoami", cookie, &whoAmIBody)
 
 	assert.Equal(t, loginResponse.UserId, whoAmIBody.UserId)
 }

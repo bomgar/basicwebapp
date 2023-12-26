@@ -22,6 +22,6 @@ http POST localhost:8080/login email=test@test.de password=fkrb
 
 
 # use cookie here
-http GET localhost:8080/api/whoami Cookie:<COOKIE_VALUE>
+http GET localhost:8080/whoami Cookie:<COOKIE_VALUE>
 
 ```
