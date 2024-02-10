@@ -2,7 +2,6 @@ package authcontroller
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -10,6 +9,8 @@ import (
 
 	"github.com/bomgar/basicwebapp/services/authservice"
 	"github.com/bomgar/basicwebapp/web/dto"
+	"github.com/bomgar/basicwebapp/web/receive"
+	"github.com/bomgar/basicwebapp/web/respond"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/securecookie"
 )
@@ -47,77 +48,46 @@ func New(logger *slog.Logger, validator *validator.Validate, authService *authse
 }
 
 func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
-	registerRequest := &dto.RegisterRequest{}
-
-	err := json.NewDecoder(r.Body).Decode(&registerRequest)
+	registerRequest, err := receive.ReceiveAndValidate[dto.RegisterRequest](r, c.validator)
 	if err != nil {
-		c.logger.Error("Failed to decode request", slog.Any("err", err))
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(err.Error()))
-		return
-	}
-
-	validationErrors := c.validator.Struct(registerRequest)
-	if validationErrors != nil {
-		c.logger.Info("Validation failed.", slog.Any("err", validationErrors))
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(validationErrors.Error()))
-		return
+		c.logger.Info("Validation failed.", slog.Any("err", err))
+		respond.Error(w, http.StatusBadRequest, err.Error(), c.logger)
 	}
 
 	c.logger.Info("Received register request.", slog.String("username", registerRequest.Email))
 
-	err = c.authService.Register(r.Context(), *registerRequest)
+	err = c.authService.Register(r.Context(), registerRequest)
 	if err != nil {
 		c.logger.Error("Failed to register user", slog.Any("err", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte(err.Error()))
+		respond.Error(w, http.StatusBadRequest, "Failed to register user", c.logger)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
-	loginRequest := &dto.LoginRequest{}
-
-	err := json.NewDecoder(r.Body).Decode(&loginRequest)
+	loginRequest, err := receive.ReceiveAndValidate[dto.LoginRequest](r, c.validator)
 	if err != nil {
-		c.logger.Warn("Failed to decode request", slog.Any("err", err))
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(err.Error()))
+		c.logger.Info("Validation failed.", slog.Any("err", err))
+		respond.Error(w, http.StatusBadRequest, err.Error(), c.logger)
 		return
 	}
 
-	validationErrors := c.validator.Struct(loginRequest)
-	if validationErrors != nil {
-		c.logger.Info("Validation failed.", slog.Any("err", validationErrors))
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(validationErrors.Error()))
-		return
-	}
-
-	userId, err := c.authService.Login(r.Context(), *loginRequest)
+	userId, err := c.authService.Login(r.Context(), loginRequest)
 	if err != nil {
-		c.logger.Warn("Failed to login", slog.Any("err", err))
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("Login failed"))
+		c.logger.Info("Login failed.", slog.Any("err", err))
+		respond.Error(w, http.StatusBadRequest, "Login failed.", c.logger)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	err = c.setSession(userId, w)
 	if err != nil {
-		c.logger.Error("Failed to write session", slog.Any("err", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte("Login failed"))
+		c.logger.Info("Set session failed.", slog.Any("err", err))
+		respond.Error(w, http.StatusInternalServerError, "Login failed.", c.logger)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(dto.LoginResponse{UserId: userId})
-	if err != nil {
-		c.logger.Error("Failed to write response: %v", err)
-	}
-
+	respond.EncodeJson(w, http.StatusOK, dto.LoginResponse{UserId: userId}, c.logger)
 }
 
 func (c *AuthController) setSession(userId int32, w http.ResponseWriter) error {
@@ -144,13 +114,8 @@ func (c *AuthController) setSession(userId int32, w http.ResponseWriter) error {
 }
 
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
-	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(dto.WhoAmIResponse{UserId: r.Context().Value(SessionKey).(Session).UserId})
-	if err != nil {
-		c.logger.Error("Failed to write response: %v", err)
-	}
+	respond.EncodeJson(w, http.StatusOK, dto.WhoAmIResponse{UserId: r.Context().Value(SessionKey).(Session).UserId}, c.logger)
 }
 
 func (c *AuthController) AuthenticatedMiddleware(next http.Handler) http.Handler {
