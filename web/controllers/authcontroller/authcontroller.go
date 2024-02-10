@@ -1,10 +1,8 @@
 package authcontroller
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
-	"slices"
 	"time"
 
 	"github.com/bomgar/basicwebapp/services/authservice"
@@ -117,30 +115,4 @@ func (c *AuthController) setSession(userId int32, w http.ResponseWriter) error {
 func (c *AuthController) WhoAmI(w http.ResponseWriter, r *http.Request) {
 
 	respond.EncodeJson(w, http.StatusOK, dto.WhoAmIResponse{UserId: r.Context().Value(SessionKey).(Session).UserId}, c.logger)
-}
-
-func (c *AuthController) AuthenticatedMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookieIndex := slices.IndexFunc(r.Cookies(), func(cookie *http.Cookie) bool {
-			return cookie.Name == CookieName
-		})
-		if cookieIndex == -1 {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		cookie := r.Cookies()[cookieIndex]
-		session := Session{}
-		err := c.secureCookie.Decode(SessionName, cookie.Value, &session)
-		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		if session.Expires.Before(time.Now()) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), SessionKey, session)))
-	})
 }
