@@ -17,6 +17,7 @@ func Error(w http.ResponseWriter, status int, message string, logger *slog.Logge
 	}
 
 }
+
 func EncodeJson[T any](w http.ResponseWriter, status int, v T, logger *slog.Logger) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

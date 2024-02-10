@@ -52,6 +52,7 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.logger.Info("Validation failed.", slog.Any("err", err))
 		respond.Error(w, http.StatusBadRequest, err.Error(), c.logger)
+		return
 	}
 
 	c.logger.Info("Received register request.", slog.String("username", registerRequest.Email))
